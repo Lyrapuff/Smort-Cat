@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <RootNamespace>Colors</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\SmortCat.Domain\SmortCat.Domain.csproj" />
+    </ItemGroup>
+
+    <Target Name="Copy module" AfterTargets="Build">
+        <Copy SourceFiles="$(OutputPath)\AntiStupidStuff.dll" DestinationFolder="$(SolutionDir)\SmortCat.Starter\bin\Debug\net5.0\Modules" ContinueOnError="true" />
+    </Target>
+</Project>
