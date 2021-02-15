@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Discord.WebSocket;
 
-namespace Colors.Services
+namespace AntiStupidStuff.Services
 {
     public class PingRestrictor
     {
@@ -13,18 +13,25 @@ namespace Colors.Services
             
             if (!user.IsBot)
             {
-                int mentionCount = message.MentionedUsers.Count + message.MentionedRoles.Count;
-
-                if (mentionCount > 3)
+                if (message.MentionedUsers.Count > 3)
                 {
                     if (_notificationChannel == null)
                     {
-                        SocketGuildChannel channel = message.Channel as SocketGuildChannel;
-                        
-                        _notificationChannel = channel.Guild.GetTextChannel(810139097322618950);
+                        if (message.Channel is SocketGuildChannel channel)
+                        {
+                            _notificationChannel = channel.Guild.GetTextChannel(810139097322618950);
+
+                            if (channel is SocketTextChannel textChannel)
+                            {
+                                await textChannel.SendMessageAsync($"Hey {user.Mention}, please stop pinging people or you'll get banned.");
+                            }
+                        }
                     }
-                    
-                    await _notificationChannel.SendMessageAsync($"{user.Mention} pings > 3 members.");
+
+                    if (_notificationChannel != null)
+                    {
+                        await _notificationChannel.SendMessageAsync($"{user.Mention} pings > 3 members.");
+                    }
                 }
             }
         }

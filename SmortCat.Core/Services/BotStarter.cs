@@ -32,6 +32,10 @@ namespace SmortCat.Core.Services
             List<IModule> modules = LoadModules(services);
             IServiceProvider provider = services.BuildServiceProvider();
             await StartModules(modules, provider);
+            
+            provider
+                .GetService<ICommandHandler>()?
+                .Start();
         }
 
         private IServiceCollection CreateServices()
@@ -42,7 +46,8 @@ namespace SmortCat.Core.Services
                 .AddSingleton(_logger)
                 .AddSingleton(_client)
                 .AddSingleton(_commandService)
-                .AddSingleton(_botCredentialsProvider);
+                .AddSingleton(_botCredentialsProvider)
+                .AddSingleton<ICommandHandler, CommandHandler>();
             
             return services;
         }

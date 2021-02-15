@@ -1,11 +1,11 @@
 ﻿using System;
-using Colors.Services;
+using AntiStupidStuff.Services;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using SmortCat.Domain.Modules;
 using SmortCat.Domain.Services;
 
-namespace Colors
+namespace AntiStupidStuff
 {
     public class Module : IModule
     {

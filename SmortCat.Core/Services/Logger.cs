@@ -20,6 +20,11 @@ namespace SmortCat.Core.Services
             Log($"[Fail][{DateTime.Now:t}] {data}", ConsoleColor.DarkRed);
         }
 
+        public void LogException(string source, Exception e)
+        {
+            Log($"[Fail][{DateTime.Now:t}] Exception in {source}{Environment.NewLine}{e}", ConsoleColor.DarkRed);
+        }
+
         public void LogDebug(object data)
         {
             Log($"[Dbug][{DateTime.Now:t}] {data}", ConsoleColor.DarkCyan);

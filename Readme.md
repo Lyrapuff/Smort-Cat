@@ -1,4 +1,7 @@
-﻿# Core
+﻿# Smort Cat discord bot
+Well, that's a bot. Yeah. A discord one. I don't have much to say...
+
+# Core
 
 ### SmortCat.Starter
 - Initiate bot launch
@@ -14,4 +17,4 @@
 # Modules
 
 ### AntiStupidStuff
-- Notifies admins if someone pinged more than 3 membe at once
+- Notifies admins if someone pinged more than 3 members at once
