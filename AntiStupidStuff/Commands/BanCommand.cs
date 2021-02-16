@@ -7,18 +7,19 @@ namespace AntiStupidStuff.Commands
 {
     public class BanCommand : ModuleBase
     {
-        private IBanService _banService;
+        private IUserService _userService;
 
-        public BanCommand(IBanService banService)
+        public BanCommand(IUserService userService)
         {
-            _banService = banService;
+            _userService = userService;
         }
         
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("ban")]
         public async Task Ban(IUser user, int prune = 0)
         {
-            await _banService.BanAsync(Context.Guild, user, prune);
+            await _userService.DeleteInviteLinks(Context.Guild, user);
+            await _userService.BanAsync(Context.Guild, user, prune);
         }
     }
 }

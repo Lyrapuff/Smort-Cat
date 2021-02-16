@@ -11,8 +11,8 @@ namespace AntiStupidStuff
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IBanService, BanService>();
-            services.AddSingleton<IPingRestrictor, PingRestrictor>();
+            services.AddSingleton<IUserService, UserService>();
+            services.AddSingleton<PingRestrictor>();
         }
 
         public void Start(IServiceProvider provider)
@@ -20,9 +20,6 @@ namespace AntiStupidStuff
             ILogger logger = provider.GetService<ILogger>();
 
             logger.LogInformation("AntiStupidStuff started!");
-
-            IPingRestrictor pingRestrictor = provider.GetService<IPingRestrictor>();
-            pingRestrictor.Start();
         }
     }
 }

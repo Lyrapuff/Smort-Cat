@@ -123,7 +123,7 @@ namespace SmortCat.Core.Services
                 await _commandService.AddModulesAsync(module.GetType().Assembly, provider);
                 module.Start(provider);
             }
-            
+
             _logger.LogInformation($"Started {modules.Count} modules.");
         }
     }
