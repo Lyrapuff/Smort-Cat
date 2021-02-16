@@ -44,7 +44,7 @@ namespace SmortCat.Core.Services
             }
             catch (Exception e)
             {
-                _logger.LogError($"An exception occured while loading credentials.{Environment.NewLine}{e}");
+                _logger.LogException("BotCredentialsProvider", e);
             }
         }
     }

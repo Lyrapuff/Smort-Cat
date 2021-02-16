@@ -1,13 +1,26 @@
 ﻿using System.Threading.Tasks;
+using AntiStupidStuff.Domain.Services;
 using Discord.WebSocket;
 
 namespace AntiStupidStuff.Services
 {
-    public class PingRestrictor
+    public class PingRestrictor : IPingRestrictor
     {
+        private DiscordSocketClient _client;
+        
         private SocketTextChannel _notificationChannel;
 
-        public async Task OnMessage(SocketMessage message)
+        public PingRestrictor(DiscordSocketClient client)
+        {
+            _client = client;
+        }
+        
+        public void Start()
+        {
+            _client.MessageReceived += MessageReceived;
+        }
+
+        private async Task MessageReceived(SocketMessage message)
         {
             SocketUser user = message.Author;
             

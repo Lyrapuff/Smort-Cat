@@ -1,6 +1,6 @@
 ﻿using System;
+using AntiStupidStuff.Domain.Services;
 using AntiStupidStuff.Services;
-using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using SmortCat.Domain.Modules;
 using SmortCat.Domain.Services;
@@ -11,7 +11,8 @@ namespace AntiStupidStuff
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<PingRestrictor>();
+            services.AddSingleton<IBanService, BanService>();
+            services.AddSingleton<IPingRestrictor, PingRestrictor>();
         }
 
         public void Start(IServiceProvider provider)
@@ -20,11 +21,8 @@ namespace AntiStupidStuff
 
             logger.LogInformation("AntiStupidStuff started!");
 
-            DiscordSocketClient client = provider.GetService<DiscordSocketClient>();
-
-            PingRestrictor pingRestrictor = provider.GetService<PingRestrictor>();
-
-            client.MessageReceived += pingRestrictor.OnMessage;
+            IPingRestrictor pingRestrictor = provider.GetService<IPingRestrictor>();
+            pingRestrictor.Start();
         }
     }
 }
