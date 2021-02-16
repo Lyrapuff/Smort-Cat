@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
+using SmortCat.Domain.Persistence;
 using SmortCat.Domain.Services;
 
 namespace SmortCat.Core.Services

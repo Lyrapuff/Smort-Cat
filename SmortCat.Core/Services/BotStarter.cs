@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using SmortCat.Domain.Modules;
+using SmortCat.Domain.Persistence;
 using SmortCat.Domain.Services;
 
 namespace SmortCat.Core.Services
@@ -29,27 +26,23 @@ namespace SmortCat.Core.Services
             await LogIntoDiscord();
             
             IServiceCollection services = CreateServices();
-            List<IModule> modules = LoadModules(services);
+
+            IModuleLoader moduleLoader = new ModuleLoader(_logger, _commandService);
+            moduleLoader.Load(services);
+
+            services.AddSingleton(moduleLoader);
+
             IServiceProvider provider = services.BuildServiceProvider();
-            await StartModules(modules, provider);
+            
+            provider
+                .GetService<BotDbContext>()?
+                .Database.EnsureCreated();
             
             provider
                 .GetService<ICommandHandler>()?
                 .Start();
-        }
-
-        private IServiceCollection CreateServices()
-        {
-            IServiceCollection services = new ServiceCollection();
-
-            services
-                .AddSingleton(_logger)
-                .AddSingleton(_client)
-                .AddSingleton(_commandService)
-                .AddSingleton(_botCredentialsProvider)
-                .AddSingleton<ICommandHandler, CommandHandler>();
             
-            return services;
+            await moduleLoader.Start(provider);
         }
 
         private async Task LogIntoDiscord()
@@ -68,63 +61,22 @@ namespace SmortCat.Core.Services
             await _client.StartAsync();
         }
         
-        private List<IModule> LoadModules(IServiceCollection services)
+        private IServiceCollection CreateServices()
         {
-            _logger.LogInformation("Loading modules.");
-            
-            List<IModule> modules = new List<IModule>();
-            
-            const string path = "Modules";
+            IServiceCollection services = new ServiceCollection();
 
-            if (!Directory.Exists(path))
-            {
-                _logger.LogError("Can't load modules, no Modules directory found.");
-                return modules;
-            }
-
-            DirectoryInfo directory = new (path);
-            
-            foreach (FileInfo file in directory.GetFiles("*.dll"))
-            {
-                Assembly assembly = Assembly.LoadFile(file.FullName);
-
-                Type moduleType = assembly
-                    .GetTypes()
-                    .FirstOrDefault(t => t.GetInterface("IModule") != null);
-
-                if (moduleType == null)
+            services
+                .AddSingleton(_logger)
+                .AddSingleton(_client)
+                .AddSingleton(_commandService)
+                .AddSingleton(_botCredentialsProvider)
+                .AddSingleton<ICommandHandler, CommandHandler>()
+                .AddDbContext<BotDbContext>(o =>
                 {
-                    _logger.LogWarning($"No module types found in {assembly.FullName} assembly.");
-                    continue;
-                }
-                
-                IModule module = Activator.CreateInstance(moduleType) as IModule;
-
-                if (module == null)
-                {
-                    continue;
-                }
-                
-                module.ConfigureServices(services);
-                modules.Add(module);
-            }
-
-            _logger.LogInformation($"Loaded {modules.Count} modules.");
+                    o.UseSqlite(_botCredentialsProvider.GetCredentials().DbConnectionString);
+                });
             
-            return modules;
-        }
-
-        private async Task StartModules(List<IModule> modules, IServiceProvider provider)
-        {
-            _logger.LogInformation("Starting modules.");
-
-            foreach (IModule module in modules)
-            {
-                await _commandService.AddModulesAsync(module.GetType().Assembly, provider);
-                module.Start(provider);
-            }
-
-            _logger.LogInformation($"Started {modules.Count} modules.");
+            return services;
         }
     }
 }
