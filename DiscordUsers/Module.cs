@@ -1,25 +1,21 @@
 ﻿using System;
-using AntiStupidStuff.Domain.Services;
-using AntiStupidStuff.Services;
+using DiscordUsers.ExecutionObstacles;
 using Microsoft.Extensions.DependencyInjection;
 using SmortCat.Domain.Modules;
 using SmortCat.Domain.Services;
 
-namespace AntiStupidStuff
+namespace DiscordUsers
 {
     public class Module : IModule
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IUserService, UserService>();
-            services.AddSingleton<PingRestrictor>();
+            services.AddSingleton<IExecutionObstacle, EnsureUserCreatedObstacle>();
         }
 
         public void Start(IServiceProvider provider)
         {
-            ILogger logger = provider.GetService<ILogger>();
-
-            logger.LogInformation("AntiStupidStuff started!");
+            
         }
     }
 }

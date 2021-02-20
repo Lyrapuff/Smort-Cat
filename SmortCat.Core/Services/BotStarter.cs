@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SmortCat.Domain.Persistence;
@@ -30,10 +33,12 @@ namespace SmortCat.Core.Services
             IModuleLoader moduleLoader = new ModuleLoader(_logger, _commandService);
             moduleLoader.Load(services);
 
+            AddMediatR(services, moduleLoader);
+            
             services.AddSingleton(moduleLoader);
 
             IServiceProvider provider = services.BuildServiceProvider();
-            
+
             provider
                 .GetService<BotDbContext>()?
                 .Database.EnsureCreated();
@@ -77,6 +82,15 @@ namespace SmortCat.Core.Services
                 });
             
             return services;
+        }
+
+        private void AddMediatR(IServiceCollection services, IModuleLoader moduleLoader)
+        {
+            Assembly[] moduleAssemblies = moduleLoader.Modules
+                .Select(m => m.GetType().Assembly)
+                .ToArray();
+            
+            services.AddMediatR(moduleAssemblies);
         }
     }
 }

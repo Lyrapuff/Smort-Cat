@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
-using SmortCat.Domain.Persistence;
+using Microsoft.Extensions.DependencyInjection;
 using SmortCat.Domain.Services;
 
 namespace SmortCat.Core.Services
@@ -15,13 +14,15 @@ namespace SmortCat.Core.Services
         private DiscordSocketClient _client;
         private CommandService _commandService;
         private IServiceProvider _provider;
+        private IEnumerable<IExecutionObstacle> _obstacles;
 
-        public CommandHandler(ILogger logger, DiscordSocketClient client, CommandService commandService, IServiceProvider provider)
+        public CommandHandler(ILogger logger, DiscordSocketClient client, CommandService commandService, IServiceProvider provider, IEnumerable<IExecutionObstacle> obstacles)
         {
             _logger = logger;
             _client = client;
             _commandService = commandService;
             _provider = provider;
+            _obstacles = obstacles;
         }
         
         public void Start()
@@ -50,8 +51,6 @@ namespace SmortCat.Core.Services
                     return;
                 }
 
-                // TODO blockers
-
                 string prefix = GetPrefix();
 
                 if (!message.Content.StartsWith(prefix))
@@ -62,6 +61,14 @@ namespace SmortCat.Core.Services
                 string input = message.Content.Substring(prefix.Length);
                 CommandContext context = new(_client, userMessage);
 
+                foreach (IExecutionObstacle obstacle in _obstacles)
+                {
+                    if (!await obstacle.TryPass(context))
+                    {
+                        return;
+                    }
+                }
+                
                 await ExecuteCommand(input, context);
             }
             catch (Exception e)
