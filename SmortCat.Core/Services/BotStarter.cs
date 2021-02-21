@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using SmortCat.Domain.Persistence;
+using SmortCat.Core.Services.Persistence;
 using SmortCat.Domain.Services;
+using SmortCat.Domain.Services.Persistence;
 
 namespace SmortCat.Core.Services
 {
@@ -33,8 +31,6 @@ namespace SmortCat.Core.Services
             IModuleLoader moduleLoader = new ModuleLoader(_logger, _commandService);
             moduleLoader.Load(services);
 
-            AddMediatR(services, moduleLoader);
-            
             services.AddSingleton(moduleLoader);
 
             IServiceProvider provider = services.BuildServiceProvider();
@@ -79,18 +75,10 @@ namespace SmortCat.Core.Services
                 .AddDbContext<BotDbContext>(o =>
                 {
                     o.UseSqlite(_botCredentialsProvider.GetCredentials().DbConnectionString);
-                });
+                })
+                .AddSingleton<IUnitOfWork, UnitOfWork>();
             
             return services;
-        }
-
-        private void AddMediatR(IServiceCollection services, IModuleLoader moduleLoader)
-        {
-            Assembly[] moduleAssemblies = moduleLoader.Modules
-                .Select(m => m.GetType().Assembly)
-                .ToArray();
-            
-            services.AddMediatR(moduleAssemblies);
         }
     }
 }

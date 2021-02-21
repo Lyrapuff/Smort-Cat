@@ -5,8 +5,9 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using SmortCat.Domain.Modules;
 using SmortCat.Domain.Services;
+using SmortCat.Domain.Services.Persistence.Models;
 
-namespace SmortCat.Domain.Persistence
+namespace SmortCat.Core.Services.Persistence
 {
     public class BotDbContext : DbContext
     {

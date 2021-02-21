@@ -8,6 +8,10 @@
       <ProjectReference Include="..\SmortCat.Domain\SmortCat.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Persistence\Respositories" />
+    </ItemGroup>
+
     <Target Name="Copy module" AfterTargets="Build">
         <Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFolder="$(SolutionDir)\SmortCat.Starter\bin\Debug\net5.0\Modules" ContinueOnError="true" />
     </Target>

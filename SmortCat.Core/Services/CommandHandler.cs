@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.Extensions.DependencyInjection;
 using SmortCat.Domain.Services;
+using SmortCat.Domain.Services.Obstacles;
 
 namespace SmortCat.Core.Services
 {
@@ -14,15 +14,17 @@ namespace SmortCat.Core.Services
         private DiscordSocketClient _client;
         private CommandService _commandService;
         private IServiceProvider _provider;
-        private IEnumerable<IExecutionObstacle> _obstacles;
+        private IEnumerable<IEarlyObstacle> _earlyObstacles;
+        private IEnumerable<ILateObstacle> _lateObstacles;
 
-        public CommandHandler(ILogger logger, DiscordSocketClient client, CommandService commandService, IServiceProvider provider, IEnumerable<IExecutionObstacle> obstacles)
+        public CommandHandler(ILogger logger, DiscordSocketClient client, CommandService commandService, IServiceProvider provider, IEnumerable<IEarlyObstacle> earlyObstacles, IEnumerable<ILateObstacle> lateObstacles)
         {
             _logger = logger;
             _client = client;
             _commandService = commandService;
             _provider = provider;
-            _obstacles = obstacles;
+            _earlyObstacles = earlyObstacles;
+            _lateObstacles = lateObstacles;
         }
         
         public void Start()
@@ -35,6 +37,19 @@ namespace SmortCat.Core.Services
             // TODO loading prefix from config.
             
             return "c!";
+        }
+
+        private async Task<bool> TryPassObstacles(IEnumerable<IObstacle> obstacles, CommandContext context)
+        {
+            foreach (IObstacle obstacle in obstacles)
+            {
+                if (!await obstacle.TryPass(context))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
         
         private async Task MessageReceived(SocketMessage message)
@@ -61,12 +76,14 @@ namespace SmortCat.Core.Services
                 string input = message.Content.Substring(prefix.Length);
                 CommandContext context = new(_client, userMessage);
 
-                foreach (IExecutionObstacle obstacle in _obstacles)
+                if (!await TryPassObstacles(_earlyObstacles, context))
                 {
-                    if (!await obstacle.TryPass(context))
-                    {
-                        return;
-                    }
+                    return;
+                }
+                
+                if (!await TryPassObstacles(_lateObstacles, context))
+                {
+                    return;
                 }
                 
                 await ExecuteCommand(input, context);

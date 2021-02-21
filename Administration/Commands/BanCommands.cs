@@ -1,26 +1,25 @@
 ﻿using System.Threading.Tasks;
-using Administration.Features;
+using Administration.Services;
 using Discord;
 using Discord.Commands;
 using FluentResults;
-using MediatR;
 
-namespace Administration
+namespace Administration.Commands
 {
-    public class Commands : ModuleBase
+    public class BanCommands : ModuleBase
     {
-        private IMediator _mediator;
+        private BanService _ban;
 
-        public Commands(IMediator mediator)
+        public BanCommands(BanService ban)
         {
-            _mediator = mediator;
+            _ban = ban;
         }
         
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("ban")]
         public async Task Ban(IUser user)
         {
-            Result result = await _mediator.Send(new BanUser(user, Context.Guild));
+            Result result = await _ban.BanUserAsync(user, Context.Guild);
 
             if (result.IsSuccess)
             {

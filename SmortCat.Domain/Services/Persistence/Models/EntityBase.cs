@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SmortCat.Domain.Persistence
+namespace SmortCat.Domain.Services.Persistence.Models
 {
     public class EntityBase
     {

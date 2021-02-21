@@ -1,6 +1,6 @@
-﻿using SmortCat.Domain.Persistence;
+﻿using SmortCat.Domain.Services.Persistence.Models;
 
-namespace DiscordUsers.Models
+namespace DiscordUsers.Persistence.Models
 {
     public class DiscordUserEntity : EntityBase
     {
