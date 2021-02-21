@@ -1,26 +1,32 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using SmortCat.Domain.Services.Persistence;
-using SmortCat.Domain.Services.Persistence.Models;
 using SmortCat.Domain.Services.Persistence.Repositories;
 
 namespace SmortCat.Core.Services.Persistence
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private DbContext _db;
-        private IServiceProvider _provider;
+        private BotDbContext _db;
 
-        public UnitOfWork(DbContext db, IServiceProvider provider)
+        private Dictionary<Type, RepositoryBase> _repositories;
+
+        public UnitOfWork(BotDbContext db)
         {
             _db = db;
-            _provider = provider;
+
+            _repositories = new Dictionary<Type, RepositoryBase>();
         }
 
-        public IRepository<T> GetRepository<T>() where T : EntityBase
+        public T GetRepository<T>() where T : RepositoryBase
         {
-            return _provider.GetService(typeof(T)) as IRepository<T>;
+            if (!_repositories.ContainsKey(typeof(T)))
+            {
+                _repositories[typeof(T)] = Activator.CreateInstance(typeof(T), _db) as RepositoryBase;
+            }
+
+            return _repositories[typeof(T)] as T;
         }
 
         public async ValueTask SaveChangesAsync()
